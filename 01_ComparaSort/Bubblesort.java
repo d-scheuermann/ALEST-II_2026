@@ -19,7 +19,7 @@ public class Bubblesort<T extends Comparable<T>> {
 
     public static void main(String args[]) {
         Random r = new Random();
-        int MAX = 10000;
+        int MAX = 30000;
         Integer[] data = new Integer[MAX];
         for(int i=0; i<data.length; i++)
             data[i] = r.nextInt(data.length*10);

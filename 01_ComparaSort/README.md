@@ -2,11 +2,11 @@
 
 - Implementações em C, Java e Python
 - Bubblesort, Mergesort e Quicksort
-- Programas geram vetores de 500 até 100.000 elementos (exceto no bubble, pela questão do desempenho)
+- Programas geram vetores de 500 até 1.000.000 elementos (exceto no bubble, pela questão do desempenho)
 
 ## Saída gráfica
 
-O script **plot.gnu** pode ser usado com o Gnuplot para gerar os gráficos de saída (compara2.pdf e compara3.pdf)
+O script **plot.gnu** pode ser usado com o Gnuplot para gerar o gráfico de saída (saida.pdf)
 Veja os detalhes dentro do próprio script
 
 Execute com:
