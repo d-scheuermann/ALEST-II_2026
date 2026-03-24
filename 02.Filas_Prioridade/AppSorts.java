@@ -12,8 +12,8 @@ public class AppSorts {
                 data[i] = r.nextInt(data.length * 10);
 
             //Mergesort<Integer> s = new Mergesort<>();
-            Quicksort<Integer> s = new Quicksort<>();
-            // MaxHeap<Integer> s = new MaxHeap<data.length>();
+            //Quicksort<Integer> s = new Quicksort<>();
+            MaxHeap<Integer> s = new MaxHeap<>(data.length+1);
 
             long start = System.nanoTime();
             s.sort(data);

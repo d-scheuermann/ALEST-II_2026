@@ -93,5 +93,30 @@ public class MaxHeap<T extends Comparable<T>> {
 
   // Implemente heapsort!
   void sort(T[] data) {
+    v = data;
+    size = v.length;
+    int n = v.length-1;
+
+    //print();
+
+    for (int k=n/2; k>=1; k--){
+      sink(k, n);
+    }
+
+    while(n > 1){
+      T tmp = v[1];
+      v[1] = v[n];
+      v[n] = tmp;
+      n--;
+      sink(1,n);
+    }
+  }
+
+  public static void main(String[] args) {
+    MaxHeap<Integer> mHeap = new MaxHeap<>(100);
+    Integer[] vet = { -1, 17, 8, 1, 4, 100, 45, 23, 18, 28, 30};
+    mHeap.sort(vet);
+    mHeap.print();
+    mHeap.printArray();
   }
 }
