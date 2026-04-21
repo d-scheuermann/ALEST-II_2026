@@ -7,15 +7,14 @@
 #include <filesystem>
 #include <sstream>
 #include <algorithm>
+#include <chrono>
 
 namespace fs = std::filesystem;
 
 class Reinflador {
 private:
     std::unordered_map<char, std::string> regras;
-    
     std::unordered_map<char, unsigned long long> memo;
-    
     std::set<char> lhs_nodes;
     std::set<char> rhs_nodes;
 
@@ -37,26 +36,20 @@ public:
         memo.clear();
         lhs_nodes.clear();
         rhs_nodes.clear();
-
         std::stringstream ss(conteudo);
         std::string linha;
-
         while (std::getline(ss, linha)) {
             if (linha.empty() || linha == "\r") continue;
-
             std::stringstream line_stream(linha);
             char lhs_char;
-            
-            if (!(line_stream >> lhs_char)) continue;
 
+            if (!(line_stream >> lhs_char)) continue;
             std::string rhs_part;
             std::getline(line_stream, rhs_part);
-            
-            limpar_string(rhs_part);
 
+            limpar_string(rhs_part);
             regras[lhs_char] = rhs_part;
             lhs_nodes.insert(lhs_char);
-
             if (!rhs_part.empty()) {
                 for (char c : rhs_part) {
                     rhs_nodes.insert(c);
@@ -78,16 +71,13 @@ public:
         if (memo.count(c)) {
             return memo[c];
         }
-
         if (regras.find(c) == regras.end() || regras[c].empty()) {
             return memo[c] = 1;
         }
-
         unsigned long long total = 0;
         for (char filho : regras[c]) {
             total += calcular_tamanho_expandido(filho);
         }
-
         return memo[c] = total;
     }
 };
@@ -97,36 +87,33 @@ void processar_arquivo_teste(const std::string& caminho_arquivo, Reinflador& rei
     if (!arquivo.is_open()) {
         return;
     }
-
     std::string conteudo;
     std::string linha;
     while (std::getline(arquivo, linha)) {
         conteudo += linha + "\n";
     }
     arquivo.close();
-
     reinflador.carregar_conteudo(conteudo);
     char raiz = reinflador.identificar_raiz();
-
     if (raiz != '\0') {
         unsigned long long resultado = reinflador.calcular_tamanho_expandido(raiz);
         std::cout << caminho_arquivo << "\n";
         std::cout << "'" << raiz << "': " << resultado << "\n";
         std::cout << "=============" << std::endl;
     }
- else {
+    else {
         std::cout << caminho_arquivo << "\n" << "Sem raiz identificável.\n=============" << std::endl;
     }
 }
 
 int main() {
+    auto start_time = std::chrono::high_resolution_clock::now();
+
     Reinflador reinflador;
-    
     std::string pasta_de_testes = "casos_11";
 
     try {
         if (fs::exists(pasta_de_testes) && fs::is_directory(pasta_de_testes)) {
-            
             for (const auto& entrada : fs::directory_iterator(pasta_de_testes)) {
                 if (entrada.path().extension() == ".txt") {
                     processar_arquivo_teste(entrada.path().string(), reinflador);
@@ -135,10 +122,17 @@ int main() {
         } else {
             std::cerr << "Diretório '" << pasta_de_testes << "' não encontrado." << std::endl;
         }
-    } catch (const std::set<char, std::allocator<char>>& e) {
     } catch (const std::exception& e) {
         std::cerr << "Erro: " << e.what() << std::endl;
     }
+
+    auto end_time = std::chrono::high_resolution_clock::now();
+    
+    std::chrono::duration<double> duration = end_time - start_time;
+
+    std::cout << "\n=============================" << std::endl;
+    std::cout << "Tempo total de execucao: " << duration.count() << " segundos" << std::endl;
+    std::cout << "=============================" << std::endl;
 
     return 0;
 }

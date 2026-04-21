@@ -7,17 +7,15 @@
 #include <filesystem>
 #include <sstream>
 #include <algorithm>
+#include <chrono>
 
 namespace fs = std::filesystem;
 
 class Reinflador {
 private:
     std::unordered_map<char, std::string> regras;
-
     std::unordered_map<char, unsigned long long> tamanho;
-
     std::unordered_map<char, bool> existe;
-
     void limpar_string(std::string& s) {
         s.erase(std::remove(s.begin(), s.end(), '\r'), s.end());
         s.erase(std::remove(s.begin(), s.end(), '\n'), s.end());
@@ -29,32 +27,25 @@ private:
         size_t last = s.find_last_not_of(" \t");
         s = s.substr(first, (last - first + 1));
     }
-
 public:
     void carregar_conteudo(const std::string& conteudo) {
         regras.clear();
         tamanho.clear();
         existe.clear();
-
         std::stringstream ss(conteudo);
         std::string linha;
-
         while (std::getline(ss, linha)) {
             if (linha.empty() || linha == "\r") continue;
-
             std::stringstream line_stream(linha);
             char lhs_char;
             if (!(line_stream >> lhs_char)) continue;
-
             std::string rhs_part;
             std::getline(line_stream, rhs_part);
             limpar_string(rhs_part);
-
             regras[lhs_char] = rhs_part;
             existe[lhs_char] = true;
         }
     }
-
     char identificar_raiz() {
         std::unordered_map<char, int> cont_inicial;
         for (auto& [letra, _] : existe) {
@@ -74,7 +65,6 @@ public:
         }
         return '\0';
     }
-
     unsigned long long calcular_com_fila(char raiz) {
         std::unordered_map<char, int> dependencias;
         for (auto& [letra, _] : existe) {
@@ -88,18 +78,15 @@ public:
                 }
             }
         }
-
         std::queue<char> fila;
         for (auto& [letra, dep] : dependencias) {
             if (dep == 0) {
                 fila.push(letra);
             }
         }
-
         while (!fila.empty()) {
             char atual = fila.front();
             fila.pop();
-
             unsigned long long soma = 0;
             for (char filho : regras[atual]) {
                 if (existe.count(filho)) {
@@ -109,7 +96,6 @@ public:
                 }
             }
             tamanho[atual] = (regras[atual].empty()) ? 1 : soma;
-
             for (auto& [pai, rhs] : regras) {
                 if (!existe.count(pai)) continue;
                 bool enfileirado = false;
@@ -124,7 +110,6 @@ public:
                 }
             }
         }
-
         return tamanho.count(raiz) ? tamanho[raiz] : 0;
     }
 };
@@ -134,17 +119,14 @@ void processar_arquivo_teste(const std::string& caminho_arquivo, Reinflador& rei
     if (!arquivo.is_open()) {
         return;
     }
-
     std::string conteudo;
     std::string linha;
     while (std::getline(arquivo, linha)) {
         conteudo += linha + "\n";
     }
     arquivo.close();
-
     reinflador.carregar_conteudo(conteudo);
     char raiz = reinflador.identificar_raiz();
-
     if (raiz != '\0') {
         unsigned long long resultado = reinflador.calcular_com_fila(raiz);
         std::cout << caminho_arquivo << "\n";
@@ -156,10 +138,10 @@ void processar_arquivo_teste(const std::string& caminho_arquivo, Reinflador& rei
 }
 
 int main() {
+    auto start_time = std::chrono::high_resolution_clock::now();
+
     Reinflador reinflador;
-
     std::string pasta_de_testes = "casos_11";
-
     try {
         if (fs::exists(pasta_de_testes) && fs::is_directory(pasta_de_testes)) {
             std::vector<std::string> arquivos;
@@ -169,7 +151,6 @@ int main() {
                 }
             }
             std::sort(arquivos.begin(), arquivos.end());
-
             for (const auto& caminho : arquivos) {
                 processar_arquivo_teste(caminho, reinflador);
             }
@@ -179,6 +160,14 @@ int main() {
     } catch (const std::exception& e) {
         std::cerr << "Erro: " << e.what() << std::endl;
     }
+
+    auto end_time = std::chrono::high_resolution_clock::now();
+    
+    std::chrono::duration<double> duration = end_time - start_time;
+
+    std::cout << "\n=============================" << std::endl;
+    std::cout << "Tempo total de execucao: " << duration.count() << " segundos" << std::endl;
+    std::cout << "=============================" << std::endl;
 
     return 0;
 }
